@@ -812,3 +812,100 @@ String name = session.getAttribute("name").toString();
 resp.getWriter().write(name);
 ```
 
+
+
+手动使session失效
+
+
+
+Session和cookie的区别：
+
+- cookie是把用户的数据写给用户的浏览器，浏览器保存（可以保存多个）
+- session吧用户的数据写到用户独占的session中，服务器保存（保存重要的信息）
+- session对象由服务器进行创建
+
+
+
+
+
+
+
+使用场景：
+
+- 保存一个登录用户的信息
+- 购物车信息
+- 在整个网站经常会使用的信息
+
+
+
+使用一个session：
+
+```java
+req.setCharacterEncoding("utf-8");
+resp.setCharacterEncoding("utf-8");
+resp.setContentType("text/html;character=utf-8");
+
+HttpSession session = req.getSession();
+session.setAttribute("name","yili");
+
+String sessionId = session.getId();
+
+if(session.isNew()){
+resp.getWriter().write("success!!!!");
+}else {
+resp.getWriter().write("ID"+sessionId);
+resp.getWriter().write(session.getAttribute("name")+"");
+}
+```
+
+就是
+
+```java
+public void setAttribute(String name, Object value);
+public Object getAttribute(String name);
+public void removeAttribute(String name);
+```
+
+手动注销session：
+
+```java
+public void invalidate();
+```
+
+就是直接注销你的session，在下次登录时会自动生成！！！
+
+session自动注销：
+
+```xml
+<session-config>
+        <session-timeout>1440</session-timeout>
+</session-config>
+```
+
+
+
+**/home/yili/.cache/JetBrains/Intell iJIdea2020.2/tomcat/Unnamed_javeweb-2_0-helloservelt_2/**
+
+### 8、JSP
+
+#### 8.1、jsp是什么
+
+jsp本质上就是一个servlet，通过将jsp转化为一个class进行转换成为一个servlet
+
+![](javaWeb.assets/Screenshot_20201210_191029.png)
+
+
+
+#### 8.2、JSP的本质
+
+```java
+    final javax.servlet.jsp.PageContext pageContext;
+    javax.servlet.http.HttpSession session = null;
+    final javax.servlet.ServletContext application;
+    final javax.servlet.ServletConfig config;
+    javax.servlet.jsp.JspWriter out = null;
+    final java.lang.Object page = this;
+```
+
+
+

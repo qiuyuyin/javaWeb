@@ -557,7 +557,7 @@ web收到客户端的http请求，分别创建一个代表请求的HttpServletre
 
   
 
-1.简单分类
+###### 1.简单分类
 
 负责向浏览器发送数据的方法：
 
@@ -569,3 +569,246 @@ PrintWriter getWriter() throws IOException;
 一个是PrintWriter
 
 另一个是ServletOutputStream
+
+###### 2.常见应用：
+
+1.向浏览器输出消息
+
+就是getwriter和outputstream：
+
+2.下载文件：
+
+	1. 下载文件的路径
+ 	2. 下载的文件名是什么
+ 	3. 让浏览器能够支持下载我们需要的东西
+ 	4. 获取下载文件的输入流
+ 	5. 获取缓冲区
+ 	6. 获取Outputstream
+ 	7. 将file写入到buffer缓冲区
+ 	8. 使用Output将缓存区文件发送出去。
+
+3,下载文件问题：
+
+```java
+protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String context = "/WEB-INF/classes/ont.png";
+    //设置相对路径
+        ServletContext sc = this.getServletContext();
+        String realpath =  sc.getRealPath("/");
+        System.out.println("root:"+realpath);
+	//设置要进行下载的文件名
+        String filename = context.substring(context.lastIndexOf("/")+1);
+
+
+        InputStream inputStream = sc.getResourceAsStream(context);
+		//读取文件流操作
+        resp.setHeader("Content-Type", "application/octet-stream");
+        resp.setHeader("Content-Disposition", "attachment;filename="+ URLEncoder.encode(filename,"UTF-8"));
+		//设置这个的响应头操作
+        int len = 0;
+        byte[] buffer = new byte[1024];
+        ServletOutputStream servletOutputStream = resp.getOutputStream();
+        while ((len=inputStream.read(buffer))>0){
+            servletOutputStream.write(buffer,0,len);
+        }//文件流的写入操作！！
+        inputStream.close();
+        servletOutputStream.close();
+    	//关闭这俩文件流
+```
+
+4.验证码功能：
+
+- 前端实现
+- 后端实现，需要生成图片
+
+```java
+protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setHeader("refresh","3");
+        //refresh
+        BufferedImage bufferedImage = new BufferedImage(50,20,BufferedImage.TYPE_INT_BGR);
+        Graphics2D graphics2D = (Graphics2D) bufferedImage.getGraphics();
+        graphics2D.setBackground(Color.BLUE);
+        graphics2D.fillRect(0,0,50,20);
+        graphics2D.setColor(Color.ORANGE);
+        graphics2D.setFont(new Font(null,Font.BOLD,20));
+        graphics2D.drawString(makenum(),0,20);
+		//绘图的类
+        resp.setContentType("image/jpeg");
+        resp.setDateHeader("expires",-1);
+        resp.setHeader("Cache-Control","no-cache");
+        resp.setHeader("Pragma","no-cache");
+		//返回给浏览器的头操作
+        ImageIO.write(bufferedImage,"jpg",resp.getOutputStream());
+    	//在浏览器中画图
+    }
+
+    private String makenum(){
+        Random random = new Random();
+        String num =  random.nextInt(9999)+"";
+        StringBuilder stringBuffer = new StringBuilder();
+        for (int i = 0; i < 4-num.length(); i++) {
+            stringBuffer.append("0");
+        }
+        num = stringBuffer.toString() + num;
+        return num;
+    }
+```
+
+
+
+4.实现重定向
+
+常见场景：用户登录之后发现没有登录，跳到登录页面，如果已经登录了，就返回你要进行操作的页面。
+
+就一行代码就可以进行重定向！！
+
+```java
+resp.sendRedirect("/servlet_03_war/image");
+```
+
+就是使用resp中的send方法进行使用，直接进行重定向操作即可！！
+
+而实现jsp操作中进行前端重定向到后端操作时，是会进行很多别的操作的！！！
+
+#### 6.12 HttpServletRequest
+
+这个代表客户端的请求，表示可以通过req调用客户端的方法！
+
+### 7.Cookie和Session
+
+#### 7.1、会话
+
+**会话**：用户打开一个浏览器，点击了很多超链接，访问多个web资源，关闭浏览器，这个过程叫做会话。
+
+**有状态会话**：
+
+你能怎么证明你是哪个学校的学生？
+
+对象：你        学校
+
+1. 发票    学校给你发票
+2. 学校登记        学校标记你来过了
+
+一个网站怎么证明你来过？
+
+客户端     服务端
+
+1. 客户端给服务端一个信件，下次访问的时候带上信件就可以了;cookie
+2. 服务器登记你来过了，下次你来的时候我来匹配你
+
+#### 7.2、保存会话的两种技术
+
+**cookie**
+
+- 客户端请求（响应、请求）
+
+**session**
+
+- 服务器技术，利用这个技术，客户端保存你的信息，下次再来的时候就直接进来就行
+
+应用：就是你登录之后下次就不需要进行登录了！！
+
+```java
+protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setCharacterEncoding("utf-8");
+        resp.setCharacterEncoding("utf-8");
+
+        PrintWriter out = resp.getWriter();
+
+        Cookie[] cookies = req.getCookies();
+        if(cookies!=null){
+            out.write("last_time_login:");
+            for (Cookie cookie : cookies) {
+                if(cookie.getName().equals("last_login_time")){
+                    long l = Long.parseLong(cookie.getValue());
+                    Date date = new Date(l);
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    out.write(format.format(date));
+                }
+            }
+        }else out.write("it is your first login");
+
+        Cookie cookie = new Cookie("last_login_time",System.currentTimeMillis()+"");
+        resp.addCookie(cookie);
+    }
+```
+
+就是应用cookies，在返回给客户端时，让他得到一个cookies，这个cookies保存着上次访问的信息流，在下次访问这个网站的时候就可以进行不登录的操作！！
+
+![Screenshot_20201209_203659](javaWeb.assets/Screenshot_20201209_203659.png)
+
+这个就是resp返回给浏览器的东西！！
+
+![Screenshot_20201209_204211](javaWeb.assets/Screenshot_20201209_204211.png)
+
+从请求中拿到cookies，再到浏览器中返回cookies
+
+
+
+**一个网站的cookies是否存在上限？**
+
+- 一个cookie只能保存一个信息
+- 一个web站点可以给浏览器发送多个cookies，最多存放20个cookie：
+- cookie大小有限制为4kB
+- 300个cookie浏览器上限
+
+
+
+删除cookie：
+
+- 不设置有效期，关闭浏览器，自动失效
+- 设置有效时间为0
+
+编码和解码的问题，就是在java中上传一个变量时，可能会导致编码出现问题！！
+
+```java
+URLEncoder.encode("","utf-8");
+URLDecoder.decode("","utf-8");
+```
+
+#### 7.4、session
+
+什么是session：
+
+- 服务器会给每一个用户创建一个session对象;
+- 一个session独占一个浏览器，只要浏览器没有关闭，这个session就存在
+
+![Screenshot_20201209_234223](javaWeb.assets/Screenshot_20201209_234223.png)
+
+这个cookies里面保存的就是session的id
+
+```java
+req.setCharacterEncoding("utf-8");
+resp.setCharacterEncoding("utf-8");
+resp.setContentType("text/html;character=utf-8");
+
+HttpSession session = req.getSession();
+session.setAttribute("name","yili");
+
+String sessionId = session.getId();
+
+if(session.isNew()){
+	resp.getWriter().write("success!!!!");
+	}else {
+		resp.getWriter().write("ID"+sessionId);
+		resp.getWriter().write(session.getAttribute("name")+"");
+	}
+
+}
+```
+
+这个是新建一个session，在这个服务器的session中添加一个session的文件
+
+下面是读取这个session中的元素
+
+```java
+req.setCharacterEncoding("utf-8");
+resp.setCharacterEncoding("utf-8");
+resp.setContentType("text/html;character=utf-8");
+
+HttpSession session = req.getSession();
+String name = session.getAttribute("name").toString();
+
+resp.getWriter().write(name);
+```
+

@@ -949,3 +949,77 @@ jsp本质上就是一个servlet，通过将jsp转化为一个class进行转换�
 
 表达式就是将你写入的一行表达式转化为一个String，再通过out进行输出出来！
 
+```jsp
+<p>
+    Today's date:<%= date.toLocaleString()%>
+</p>
+```
+
+#### 8.4、JSP指令
+
+jsp指令用来设置与整个JSP页面相关的属性。
+
+jsp指令语法格式：
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@page isErrorPage="true" %>
+<%@page autoFlush="true" %>
+<%@page extends="java.lang.String" %>
+<%@page import="java.lang.*" %>
+```
+
+在页面的最开始设置page页面
+
+```jsp
+<%@include file="../index.jsp"%>
+<jsp:include page="../index.jsp"/>
+```
+
+#### 8.5、JSP动作元素
+
+这些动作元素是利用xml的语法进行完成的。利用动作元素可以动态地插入文件，重用JavaBean组件、把用户重定向到另外的页面、为java插件生成html代码
+
+动作元素只有一种语法，就是之前在jsp中书写include语法中的代码！
+
+![image-20201212220641997](javaWeb.assets/image-20201212220641997.png)
+
+常见的属性：
+
+所有的动作元素都有两个属性：id和scope属性
+
+- id属性：
+
+  id属性是动作元素的唯一标识，可以在在jsp页面中引用。动作元素创建的id值可以通过PageContext来进行调用。
+
+- scope属性：
+
+  该属性用于识别动作元素的生命周期。 id属性和scope属性有直接关系，scope属性定义了相关联id对象的寿命。 scope属性有四个可能的值： (a) page, (b)request, (c)session, 和 (d) application。
+
+，
+
+#### 8.7、JSP九大隐式对象
+
+<img src="javaWeb.assets/image-20201212231147561.png" alt="image-20201212231147561" style="zoom:150%;" />
+
+隐式对象：
+
+是jsp容器为每个页面提供的Java对象，当你想使用这些对象时，就不用再自己进行实现。直接调用系统为你提供的实现类（即隐式对象）即可！
+
+**request对象**
+
+```jsp
+<%
+    Enumeration<String> headerNames = request.getHeaderNames();
+    while (headerNames.hasMoreElements()){
+        String paramName = headerNames.nextElement();
+        String header = request.getHeader(paramName);
+        out.println("<h2>"+paramName+":"+header+"</h2>");
+    }
+%>
+```
+
+下面是通过访问web的信息得到的header，和上述程序获得的信息完全相同，不过上面的信息并没有进行排序
+
+![image-20201212234151713](javaWeb.assets/image-20201212234151713.png)
+

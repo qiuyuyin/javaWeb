@@ -579,13 +579,13 @@ PrintWriter getWriter() throws IOException;
 2.下载文件：
 
 	1. 下载文件的路径
- 	2. 下载的文件名是什么
- 	3. 让浏览器能够支持下载我们需要的东西
- 	4. 获取下载文件的输入流
- 	5. 获取缓冲区
- 	6. 获取Outputstream
- 	7. 将file写入到buffer缓冲区
- 	8. 使用Output将缓存区文件发送出去。
+	2. 下载的文件名是什么
+	3. 让浏览器能够支持下载我们需要的东西
+	4. 获取下载文件的输入流
+	5. 获取缓冲区
+	6. 获取Outputstream
+	7. 将file写入到buffer缓冲区
+	8. 使用Output将缓存区文件发送出去。
 
 3,下载文件问题：
 
@@ -907,5 +907,45 @@ jsp本质上就是一个servlet，通过将jsp转化为一个class进行转换�
     final java.lang.Object page = this;
 ```
 
+#### 8.3、jsp语法
 
+脚本程序可以包含任意量的Java语句、变量、方法或者表达式，只要它们在脚本语言中是有效的。
+
+##### jsp脚本插入
+
+```jsp
+<%
+    pageContext.setAttribute("name1","a");
+    request.setAttribute("name2","b");
+    session.setAttribute("name3","c");
+    application.setAttribute("name4","d");
+%>
+
+<%
+    Object name1 = pageContext.getAttribute("name1");
+    Object name2 = pageContext.getAttribute("name2");
+    Object name3 = pageContext.getAttribute("name3");
+    Object name4 = pageContext.getAttribute("name4");
+%>
+```
+
+##### jsp声明
+
+一个声明语句可以声明一个或者多个变量、方法，给后面的java代码进行使用。先声明这些变量和方法，然后进行使用。
+
+```jsp
+<%!
+    int a,b,c;
+    Date date =new Date();
+%>
+<%
+    a=b=c=1;
+    out.println(a+b+c);
+    out.println(date);
+%>
+```
+
+##### jsp表达式
+
+表达式就是将你写入的一行表达式转化为一个String，再通过out进行输出出来！
 

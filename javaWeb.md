@@ -1023,3 +1023,98 @@ jsp指令语法格式：
 
 ![image-20201212234151713](javaWeb.assets/image-20201212234151713.png)
 
+#### 8.8、JSTL，EL表达式
+
+##### EL表达式：
+
+- **获取数据**
+- **执行运算**
+- **获取web开发的常用对象**
+
+```xml
+<dependency>
+   <groupId>javax.servlet.jsp.jstl</groupId>
+   <artifactId>jstl-api</artifactId>
+      <version>1.2</version>
+</dependency>
+
+<dependency>
+     <groupId>org.apache.taglibs</groupId>
+     <artifactId>taglibs-standard-impl</artifactId>
+     <version>1.2.5</version>
+</dependency>
+```
+
+##### JSTL表达式：
+
+**1.核心标签**
+
+首先是要导入头部的标签库
+
+```jsp
+<%--引入JSTL核心标签库--%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+```
+
+![image-20201213165519003](javaWeb.assets/image-20201213165519003.png)
+
+
+
+**if和redirect的用法：**
+
+```jsp
+<form action="TagTest.jsp" method="get">
+    <input type="text" name="username" value="${param.username}">
+    <input type="submit" value="登录">
+</form>
+
+<c:if test="${param.username=='admin'}" var="isAdmin">
+    <c:redirect url="http://localhost:8080/servlet01_war/"/>
+    可以在这个语句中实现多种功能！
+</c:if>
+```
+
+**foreach的用法：**
+
+```jsp
+<%
+    ArrayList<String> names = new ArrayList<>();
+    names.add("1");
+    names.add("2");
+    names.add("3");
+    names.add("4");
+    names.add("5");
+    request.setAttribute("list",names);
+%>
+<c:forEach var="name" items="${list}">
+    <c:out value="${name}"/>
+    <br>
+</c:forEach>
+```
+
+![foreach的实际用法](javaWeb.assets/image-20201213183827968.png)
+
+其实这里的foreach和在java代码中所使用的foreach是正好相似的，就是新加入一个变量，从某个集合中将其进行提取出来
+
+**2.格式化标签**
+
+**3.sql标签**
+
+**4.xml标签**
+
+#### 8.9、JavaBean
+
+实体类：
+
+JavaBean有特定的写法：
+
+- 必须有一个无参构造
+- 属性必须私有化
+- 必须有对应get/set的方法
+
+一般用来和数据库的字段做映射 ORM
+
+- 表    -----    类
+- 字段   ------    属性
+- 行 ------- 对象
+

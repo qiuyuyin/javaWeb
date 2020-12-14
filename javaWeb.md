@@ -1203,3 +1203,48 @@ Servlet事件监听器是一个实现了特定接口的java程序，这个程序
 一共八种监听器：
 
 ![image-20201214182144261](javaWeb.assets/image-20201214182144261.png)
+
+#### 监听器的应用：
+
+通过监听器来显示同时在线人数：
+
+```java
+public class Listener_Test implements HttpSessionListener {
+    private int count = 0;
+
+    @Override
+    public void sessionCreated(HttpSessionEvent se) {
+        count++;
+        System.out.println("监听器创建！");
+        ServletContext servletContext = se.getSession().getServletContext();
+        servletContext.setAttribute("count", new Integer(count));
+    }
+
+    @Override
+    public void sessionDestroyed(HttpSessionEvent se) {
+        count--;
+        System.out.println("监听器销毁");
+        ServletContext servletContext = se.getSession().getServletContext();
+        servletContext.setAttribute("count",new Integer(count));
+    }
+}
+```
+
+监听器的销毁：
+
+- 手动销毁：
+
+  通过 getSession.invalidate进行销毁！
+
+- 自动销毁：
+
+  通过设置session的失效时间来让它进行销毁！
+
+#### 监听器的配置：
+
+```xml
+<listener>
+    <listener-class>com.yili.listener.Listener_Test</listener-class>
+</listener>
+```
+

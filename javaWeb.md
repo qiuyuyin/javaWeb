@@ -1118,3 +1118,88 @@ JavaBean有特定的写法：
 - 字段   ------    属性
 - 行 ------- 对象
 
+### 9、MVC三层架构
+
+什么是MVC：
+
+Model、view、Controller
+
+模型：就是一个实体类
+
+视图：就是之前写的JSP
+
+控制器：就是servlet
+
+![img](javaWeb.assets/aHR0cHM6Ly9ibG9naW1hZ2UtMTI1NTYxODU5Mi5jb3MuYXAtY2hlbmdkdS5teXFjbG91ZC5jb20vaW1nMjAyMDAzMTgxNjI0NDYucG5n)
+
+MVC（Model View Controller）是软件工程中的一种软件架构模式，它把软件系统分为模型、**视图**和**控制器**三个基本部分。用一种业务逻辑、数据、界面显示分离的方法组织代码，将业务逻辑聚集到一个部件里面，在改进和个性化定制界面及用户交互的同时，不需要重新编写业务逻辑。
+
+在进行版本迭代的时候不至于将整个的代码全部进行重写，减小实现版本迭代时的工作量，并且为大型项目进行协同开发做足准备。
+
+![img](javaWeb.assets/aHR0cHM6Ly9ibG9naW1hZ2UtMTI1NTYxODU5Mi5jb3MuYXAtY2hlbmdkdS5teXFjbG91ZC5jb20vaW1nMjAyMDAzMTgyMzI2MTcucG5n)
+
+最重要的一点就是**降低耦合性**！！
+
+到最后直接形成的就是SSM，即SpringMVC、Spring、MyBatis框架
+
+
+
+### 10、Filter（过滤器）
+
+#### 1.什么是filter
+
+过滤器就相当于是一个你在进行访问页面时的一个拦网，会对你的请求和相应过程进行格式化处理，相当于stream流中的过滤操作。
+
+- 在客户端的请求访问后端资源之前，拦截这些请求。
+- 在服务器的响应发送回客户端之前，处理这些响应。
+
+#### 2.实现Filter接口
+
+每一个过滤器对象都需要直接或者间接的去实现一个Filter接口，在接口中存在三个需要进行实现的方法：
+
+```java
+public class First_Filter implements Filter {
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        System.out.println("初始化过滤器");
+    }
+
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        servletRequest.setCharacterEncoding("utf-8");
+        servletResponse.setCharacterEncoding("utf-8");
+        servletResponse.setContentType("text/html;charset=UTF-8");
+        PrintWriter writer = servletResponse.getWriter();
+        writer.println("进入过滤器");
+        filterChain.doFilter(servletRequest,servletResponse);
+        writer.println("离开过滤器");
+    }
+    
+    @Override
+    public void destroy() {
+        System.out.println("销毁过滤器");
+    }
+}
+
+```
+
+#### 3.过滤器的配置文件
+
+```xml
+<filter>
+    <filter-name>Filter_Servlet</filter-name>
+    <filter-class>com.yili.Filter.First_Filter</filter-class>
+</filter>
+<filter-mapping>
+    <filter-name>Filter_Servlet</filter-name>
+    <url-pattern>/servlet/*</url-pattern>
+</filter-mapping>
+```
+
+### 11、事件监听器
+
+Servlet事件监听器是一个实现了特定接口的java程序，这个程序专门用于监听Web应用中域对象的创建和销毁过程、监听这些对象属性的修改以及绑定到HttpSession域中的某个对象的状态。
+
+一共八种监听器：
+
+![image-20201214182144261](javaWeb.assets/image-20201214182144261.png)

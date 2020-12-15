@@ -1248,3 +1248,255 @@ public class Listener_Test implements HttpSessionListener {
 </listener>
 ```
 
+### 12、JDBC
+
+**什么是jdbc：Java数据库连接池**
+
+由于一个应用是没办法直接去操作数据库的。
+
+而JDBC就是一个统一驱动去实现操作数据库的驱动的操作！！
+
+#### 1.Jdbc环境的搭建
+
+**先在pom中导入数据库连接的依赖：**
+
+```xml
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.22</version>
+        </dependency>
+```
+
+然后在idea中加入一个database的配置文件：
+
+![image-20201215152444378](javaWeb.assets/image-20201215152444378.png)
+
+#### 2.jdbc的连接
+
+新建一个java类去实现这个sql语句的实现：
+
+1.去编辑你的url和username和password
+
+```java
+String url = "jdbc:mysql://localhost:3306/jdbc?serverTimezone=GMT&useUnicode=true&characterEncoding=utf-8";
+String username = "root";
+String password = "979yili.";
+```
+
+2.加载驱动，连接数据库
+
+```java
+Class.forName("com.mysql.jdbc.Driver");
+//2.连接数据库
+Connection connection = DriverManager.getConnection(url, username, password);
+//3.向数据库发送SQL的对象CRUD
+Statement statement = connection.createStatement();
+//4.编写SQL
+String sql_one = "select * from users";
+ResultSet set = statement.executeQuery(sql_one);
+
+```
+
+```java
+//5.输出数据
+while (set.next()){
+    System.out.println("id="+set.getObject("id"));
+    System.out.println("name="+set.getObject("name"));
+    System.out.println("password="+set.getObject("password"));
+    System.out.println("email="+set.getObject("email"));
+    System.out.println("birthday="+set.getObject("birthday"));
+}
+//6.退出这个连接池
+set.close();
+statement.close();
+connection.close();
+```
+
+### 13、Mysql的事务
+
+#### 事务的必要性：
+
+事务的存在可以保持我们的数据库的稳定性和完整性，它保证输入的sql语句要么全部执行，要么全部不执行
+
+一般来说，事务是必须满足4个条件（ACID）：：原子性（Atomicity，或称不可分割性）、一致性（Consistency）、隔离性（Isolation，又称独立性）、持久性（Durability）。
+
+原子性：一个事务中的所有操作，要么全部完成要么全部不完成，不会结束在进行操作的中间层面，通过事务的回滚操作来进行实现！
+
+一致性：进行事务相关联的数据库在进行事务操作后还是关联的，不会破坏数据库之间的完整性。同时运用在后面数据库可以自发地进行某项操作。
+
+隔离性：数据库允许多个并发事务同时对数据进行读写和修改的能力，隔离性可以防止多个事务并发进行执行的时候，导致最后的结果出现不同。事务隔离存在多个级别：读未提交（Read uncommitted）、读提交（read committed）、可重复读（repeatable read）和串行化（Serializable）。
+
+持久性：数据库一旦发生数据的改变，即使系统发生了故障也不会丢失数据。
+
+#### 事务相关的词汇：
+
+- 事务(transation)  指一组SQl语句
+- 回退(rollback)  撤销之前提交的语句
+- 提交(commit)  将未储存的SQL语句结果写入数据库表
+- 保留点(savepoint)
+
+#### 事务的隔离性分级
+
+##### 读未提交：
+
+- 事物A和事物B，事物A未提交的数据，事物B可以读取到
+- 这里读取到的数据叫做“脏数据”
+- 这种隔离级别最低，这种级别一般是在理论上存在，数据库隔离级别一般都高于该级别
+
+##### 读已提交：
+
+就是事务A在进行的过程中，在事务B进入事务之前对一个表中的数据域进行查询值，假如是20.但是在事务B进入之后对表中的数据进行了修改后                       
+
+### 14、Mysql复习：
+
+#### 1.数据库操作:
+
+创建数据库和使用数据库：
+
+```mysql
+create database users;
+use users;
+show databases;
+
+```
+
+#### 2.表操作：
+
+展示数据库中所有的表：
+
+```mysql
+show tables;
+```
+
+![image-20201215204823074](javaWeb.assets/image-20201215204823074.png)
+
+
+
+其他show语句：
+
+```mysql
+#展示一个表的所有列表：
+show columns from users;
+#显示广泛的服务器状态信息：
+show status;
+#显示创建特定的数据库或者表时的Mysql语句：
+show create database jdbc;
+show create table goods;
+
+```
+
+#### 3、检索数据
+
+
+
+**使用select进行检索数据：**
+
+```mysql
+#检索单个列：
+select id from users;
+#检索多个列
+select id ,name from users;
+#检索所有列
+select * from users;
+#检索多个列（并且列中的元素值必须不同
+select distinct password from users;
+#限制检索得到的结果
+select id from users limit 2;
+#限制检索得到的结果(从第几行开始检索几行）从下标为0开始。
+select id from users limit 1,2;
+```
+
+
+
+#### 4、排序检索数据
+
+
+
+使用order by进行检索排序限定：
+
+```mysql
+select email from users;
+select email from users order by email;#按照email的顺序进行排序
+select email from users order by id;#按照id的顺序进行排序
+```
+
+```mysql
+#按照多个列进行排序(先按照pass，再按照email)
+select *from users order by password,email;
+```
+
+![image-20201215211408406](javaWeb.assets/image-20201215211408406.png)
+
+```mysql
+#指定排序的方向，其他的等同于上面的进行排序；
+#（升序为ASC，降序为DESC）升序排列时默认的，所以一般不进行书写
+select *from users order by password desc ,email;
+```
+
+![image-20201215211615406](javaWeb.assets/image-20201215211615406.png)
+
+特别需要进行注意到的是，当order by 和limit一起进行使用的时候，必须是要界定位序的。
+
+order by必须要放在前面才能进行正常的运转，不然会进行报错。
+
+#### 5、过滤数据
+
+使用where语句
+
+```mysql
+select *from users where id=2;
+select *from users where id<>2;
+select * from users where id between 2 and 4;
+select * from users where id is not null ;
+select * from users where id is null ;
+```
+
+操作符:
+
+- = 为等于
+- <> 为不等于
+- != 为不等于
+- <  和  <= 
+- bertween是一个范围
+
+
+
+**组合进行过滤**:
+
+```mysql
+#and操作符号
+select * from users where id >2 and name is not null;
+#or操作符号
+select * from users where id >2 or name is not null;
+#优先次序:and优先于or运算符,可以使用括号进行包裹进行明确输出的次序
+```
+
+not作用域:
+
+目前已知对not进行作用的有:
+
+```mysql
+select  * from users where not id in (2,3);
+select  * from users where not id between 2 and 3;
+```
+
+**使用通配符进行过滤:**
+
+```mysql
+#Like操作符
+#1.%通配符
+select  * from users where email like '%@qq.com';
+select  * from users where birthday like '2000%';
+#2._通配符
+select  * from users where password like '_____6';
+select  * from users where password like '123___';
+```
+
+**使用正则表达式进行过滤**:
+
+```mysql
+# **使用正则表达式进行过滤**:
+select  * from users where password regexp '123456|222222';
+select  * from users where password regexp '.*';
+```

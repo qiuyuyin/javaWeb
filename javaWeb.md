@@ -1500,3 +1500,186 @@ select  * from users where password like '123___';
 select  * from users where password regexp '123456|222222';
 select  * from users where password regexp '.*';
 ```
+
+#### 6、创建计算字段
+
+由于储存在数据库中的数据一般不是应用程序所需要的格式（虽然在后面我们可以通过JDBC进行解决这个问题）
+
+**计算字段：**
+
+```mysql
+#拼接字段：
+select concat(id,'(',name,')') from users order by email;
+#使用别名：
+select concat(id,'(',name,')') as vend_title from users order by email;
+#执行算数运算：
+select id ,id*10 as expand from users where id = 3;
+
+```
+
+#### 7、使用数据处理函数
+
+**函数：**
+
+和其他的大部分计算机语言一样，SQL支持使用函数来进行处理数据。函数一般都是在得到的数据中进行执行，给数据的转换和处理提供了方便。
+
+**文本处理函数**：（一般用在查找数据中）
+
+使用Upper函数：
+
+```mysql
+select email , upper(email) as Upper_email from users order by email;
+select email , lower(email) as Upper_email from users order by email;
+select email , left(email,1) as Upper_email from users order by email;
+select email , right(email,3) as Upper_email from users order by email;
+select email , soundex(email) as Upper_email from users order by email;
+
+
+```
+
+![image-20201216104122190](javaWeb.assets/image-20201216104122190.png)
+
+https://www.runoob.com/mysql/mysql-functions.html访问这个网址查看具体函数的使用情况。
+
+**时间处理函数：**
+
+```mysql
+select current_date;
+select current_timestamp();
+select current_time();
+select localtime();
+select datediff('2020-12-16 10:59:50','2020-12-15 10:59:51');
+select timediff('2020-12-15 10:59:50','2020-12-15 10:59:51');
+```
+
+就是说在你在MySQL中存储数据的时候： 一般采用的时间戳是：2020-12-15 10:59:50'这种形式。
+
+**数值处理函数：**
+
+```mysql
+select pi();
+select abs(-10);
+select cos(-10);
+select exp(-10);
+select mod(10,3);
+select rand();
+```
+
+#### 8、汇总数据
+
+```mysql
+#平均值函数进行汇总
+select avg(id) as avg_id from users;
+select sum(id) as sum_id from users;
+select max(id) as max_id from users;
+select min(id) as min_id from users;
+select count(id) as count from users;
+```
+
+#### 9、分组汇总数据
+
+在进行分组的时候，使用的是group up关键字
+
+```mysql
+select id ,max(num) ,avg(num) as num_prods from sort group by id;
+select id ,max(num) ,avg(num) as num_prods from sort group by id  order by id desc ;
+select id ,max(num) ,avg(num) as num_prods from sort group by id with rollup ;
+```
+
+with rollup关键字可以得到每个分组的总级别进行展现，
+
+**select子句的顺序**
+
+**select from where group by having order by limit**
+
+```mysql
+select u.id , max(u.num) from sort u where id>1 group by u.id having count(*)>2 order by u.id desc limit 2;
+```
+
+#### 10、使用子查询
+
+就是在一个查询语句中加入另外的一个查询语句，相当于把两个SQL语句相互联系起来。
+
+```mysql
+#1.将子查询作为限定语句去进行寻找
+select id ,password from users where id in(select s.id from sort s where num between 1 and 9);
+#2.将子查询的结果进行展示
+select id , password, email, birthday,(select count(*) from sort where sort.id=users.id) as count from users order by id;
+```
+
+#### 11、联结表：重要
+
+**外部联结**：
+
+就是只经过查询将两个表中的数据进行联系起来，
+
+```mysql
+#内部连接：
+select u.id ,u.email, u.password ,s.num  from users u inner join sort s on u.id=s.id;
+# 外部联结
+select s.id ,u.email, u.password ,s.num  from users u right join sort s on u.id=s.id;
+#自然联结
+select s.id ,u.email, u.password ,s.num  from users u , sort s where u.id=s.id;
+#笛卡尔联结
+select s.id ,u.email, u.password ,s.num  from users u , sort s ;
+```
+
+#### 12、组合查询
+
+多树的SQL语句是对一个或者多个表中执行一次select查询，而Mysql也允许进行多次selcet语句的使用，这些组合查询通常被称为并或者是符合查询。
+
+#### 13、插入数据：
+
+插入完整的行，
+
+```mysql
+INSERT INTO jdbc.users (
+                        id, name, password, email, birthday
+                        ) VALUES (
+                                  5, '田七', '111111', 'tq@qq.com', '2020-12-16')
+INSERT INTO jdbc.users (
+                        id, name, password, email, birthday
+                        ) VALUES (
+                                  6, null, null, null, null)
+                                  
+```
+
+在不是必须要非空的键上也可以插入一个null
+
+#### 14、更新和删除数据
+
+更新数据有两种进行方式：
+
+- 更新表中的特定行
+- 更新表中的所有行
+
+ ```mysql
+   update users
+   set password = '123000'
+   where id = 1;
+ ```
+
+删除数据同样是两种形式：
+
+- 删除表中的特定行
+- 删除表中的所有行（即删除表中的所有数据）
+
+```mysql
+delete from users where id = 6;
+```
+
+#### 15、创建表
+
+- 设置主键
+- 非空
+- 默认值
+- 
+
+增加列、删除列：
+
+```mysql
+alter table users add vend varchar(20) not null default '123';
+alter table users drop column vend;
+```
+
+​																							

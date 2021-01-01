@@ -1626,7 +1626,7 @@ select s.id ,u.email, u.password ,s.num  from users u , sort s ;
 
 #### 12、组合查询
 
-多树的SQL语句是对一个或者多个表中执行一次select查询，而Mysql也允许进行多次selcet语句的使用，这些组合查询通常被称为并或者是符合查询。
+多树的SQL语句是对一个或者多个表中执行一次select查询，而Mysql也允许进行多次selcet语句的使用，这些组合查询通常被称为并或者是符合查询。                                                                                                                          
 
 #### 13、插入数据：
 
@@ -1683,3 +1683,190 @@ alter table users drop column vend;
 ```
 
 ​																							
+
+### 15、servlet实现文件上传操作
+
+#### 1.搭建环境
+
+首先需要导入**commons-io**和**commons-fileupload**这两个包
+
+在后面进行文件的传输中需要进行使用！
+
+```xml
+<dependency>
+  <groupId>commons-io</groupId>
+  <artifactId>commons-io</artifactId>
+  <version>2.8.0</version>
+</dependency>
+<dependency>
+  <groupId>commons-fileupload</groupId>
+  <artifactId>commons-fileupload</artifactId>
+  <version>1.3.3</version>
+</dependency>
+```
+
+#### 2.前端代码
+
+首先进行网页访问必须使用post进行访问，因为get进行访问是有大小进行限制的（大约问10kb左右）就无法进行文件上传的操作了。
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+<%--通过表单上传文件
+    post：上传的文件没有限制
+    get：上传的文件有限制
+--%>
+<form action="${pageContext.request.contextPath}/upload.do" method="post" enctype="multipart/form-data">
+    上传用户：<input type="text" name="username"> <br>
+    <p><input type="file" name="file1"></p>
+    <p><input type="file" name="file2"></p>
+    <p><input type="submit">|<input type="reset"></p>
+</form>
+</body>
+</html>
+```
+
+```jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+
+${msg}
+
+</body>
+</html>
+```
+
+#### 3.后台操控
+
+##### 3.1建立保存文件的路径：
+
+```java
+package org.apache.commons.fileupload.servlet;
+```
+
+这是我们需要导入的包！
+
+首先判断上传的信息流是普通的表单还是一个带有文件流的数据域，如果是一个十分普通的数据域就直接返回；
+
+```java
+if(!ServletFileUpload.isMultipartContent(req)){
+    return;
+}
+```
+
+再是查看文件域中是否存在一个这样的路径，如果没有就先创建一个！
+
+```java
+String realPath = this.getServletContext().getRealPath("WEB-INF/upload");
+File uploadFile = new File(realPath);
+if(!uploadFile.exists()){
+    uploadFile.mkdir();
+}
+```
+
+```java
+String tmpPath = this.getServletContext().getRealPath("WEB-INF/tmp");
+File tmpFile = new File(tmpPath);
+if(!tmpFile.exists()){
+    tmpFile.mkdir();
+}
+```
+
+设置一个缓冲路径，就是文件过大，需要在一个地方放置一个缓冲的地方，而不是占用内存对文件进行处理，而在文件上传了之后会直接将文件delete掉（这里指缓冲文件）
+
+```java
+fileItem.delete();
+```
+
+##### 3.2建立缓冲文件路径
+
+将你已经写了的缓冲目录输入到工厂对象里面，这个是之后进行上传文件中必备的操作。可能是apache的库中所进行要求的操作，其实也可以直接进行上传的操作。但是考虑到生产的周期，还是要设置一个缓冲的路径。
+
+```java
+DiskFileItemFactory diskFileItemFactory = getDiskFileItemFactory(tmpFile);
+ public static DiskFileItemFactory getDiskFileItemFactory(File file){
+        DiskFileItemFactory factory = new DiskFileItemFactory();
+        //设置缓冲区的文件大小，当文件大小大于缓冲区的时候，将它放到临时文件中
+        factory.setSizeThreshold(1024*1024*10);
+        factory.setRepository(file);
+        return factory;
+    }
+```
+
+##### 3.3建立一个文件上传流
+
+```java
+public static ServletFileUpload getServletFileUpload(DiskFileItemFactory factory){
+    ServletFileUpload servletFileUpload = new ServletFileUpload();
+    servletFileUpload.setFileItemFactory(factory);
+    servletFileUpload.setProgressListener(new ProgressListener() {
+        @Override
+        public void update(long l, long l1, int i) {
+            // 总大小表示为l1，已经上传的大小为l
+            System.out.println("文件大小为：" + l + ",当前已处理：" + l1);
+        }
+    });
+    servletFileUpload.setHeaderEncoding("utf-8");//设置文件的字符类型
+    servletFileUpload.setFileSizeMax(1024*1024*10);//设置文件的最大值
+    servletFileUpload.setSizeMax(1024*1024*10);//设置总文件的最大值
+    return servletFileUpload;
+}
+```
+
+##### 3.4进行文件的上传
+
+```java
+public static String uploadParseRequest(ServletFileUpload servletFileUpload,HttpServletRequest req,String uploadPath) throws IOException, FileUploadException {
+    String msg = "";
+    List<FileItem> fileItems = servletFileUpload.parseRequest(req);
+    for(FileItem fileItem:fileItems){
+        if(fileItem.isFormField()){
+            String name = fileItem.getFieldName();
+            String value = fileItem.getString("utf-8");
+            System.out.println(name+":"+value);
+        }else {
+            String name = fileItem.getName();
+            System.out.println("上传的文件名："+name);
+            if(name==null||name.trim().equals("")){
+                continue;
+            }
+            String filename = name.substring(name.lastIndexOf("/") + 1);
+            String fileExtName = name.substring(name.lastIndexOf(".") + 1);
+
+
+            String uuidFileName = UUID.randomUUID().toString();
+
+            System.out.println(filename+"."+fileExtName);
+            //传递文件。。。。。。。。。。。。。。。。。。。
+            //获得一个文件上传的流
+            InputStream inputStream = fileItem.getInputStream();
+            //创建一个文件输入流
+            FileOutputStream fileOutputStream = new FileOutputStream(uploadPath + "/" + uuidFileName + "." + fileExtName);
+            System.out.println(uploadPath + "/" + uuidFileName + "." + fileExtName);
+
+            byte[] buffer = new byte[1024];
+
+            int len = 0;
+
+            while ((len=inputStream.read(buffer))>0){
+                fileOutputStream.write(buffer,0,len);
+            }
+
+            fileOutputStream.close();
+            inputStream.close();
+            msg="文件上传成功！";
+            fileItem.delete();
+        }
+    }
+    return msg;
+}
+```
+
